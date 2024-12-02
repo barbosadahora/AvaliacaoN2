@@ -1,20 +1,42 @@
 import sqlite3
+from database import create_connection
 
-def create_connection():
-    conn = sqlite3.connect('todo.db')
-    return conn
+class Task:
+    def __init__(self, title, description):
+        self.title = title
+        self.description = description
+        self.status = 'Pendente'
 
-def create_table():
-    conn = create_connection()
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS tasks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            description TEXT,
-            status TEXT NOT NULL DEFAULT 'Pendente',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    conn.commit()
-    conn.close()
+    @staticmethod
+    def create_task(task):
+        conn = create_connection()
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO tasks (title, description, status) VALUES (?, ?, ?)',
+                       (task.title, task.description, task.status))
+        conn.commit()
+        conn.close()
+
+    @staticmethod
+    def get_all_tasks():
+        conn = create_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM tasks')
+        tasks = cursor.fetchall()
+        conn.close()
+        return tasks
+
+    @staticmethod
+    def update_task(task_id, status):
+        conn = create_connection()
+        cursor = conn.cursor()
+        cursor.execute('UPDATE tasks SET status = ? WHERE id = ?', (status, task_id))
+        conn.commit()
+        conn.close()
+
+    @staticmethod
+    def delete_task(task_id):
+        conn = create_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
+        conn.commit()
+        conn.close()
